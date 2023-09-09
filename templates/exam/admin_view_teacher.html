@@ -1,0 +1,62 @@
+{% extends 'student/adminbase.html' %}
+{% block content %}
+{% load static %}
+
+<head>
+  <!-- Include Bootstrap and jQuery -->
+  <!-- <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet"> -->
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+</head>
+<br><br>
+<div class="container">
+  <!-- Search bar -->
+  <div class="form-group">
+    <input type="text" class="form-control" id="searchInput" placeholder="Search by Name">
+  </div>
+
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h6 style="margin-bottom: 20px; margin-left: 40%;" class="panel-title"><b>Staff's Details</b> </h6>
+    </div>
+    <table class="table table-hover table-bordered" id="dev-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Photo</th>
+          <th>Contact</th>
+          <th>Address</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      {% for t in teachers %}
+      <tr>
+        <td>{{ t.get_name }}</td>
+        <td><img src="{{ t.profile_pic.url }}" alt="Profile Pic" height="40px" width="40px" /></td>
+        <td>{{ t.mobile }}</td>
+        <td>{{ t.address }}</td>
+        <td>
+          <a class="btn btn-success btn-xs" style="border-radius: 0%;" href="{% url 'update-teacher' t.id %}">EDIT<span class="glyphicon glyphicon-edit"></span></a>
+          <a class="btn btn-danger btn-xs" style="border-radius: 0%;" href="{% url 'delete-teacher' t.id %}">DELETE<span class="glyphicon glyphicon-trash"></span></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<br><br><br><br><br><br>
+
+<script>
+  // Function to handle the search functionality
+  $(document).ready(function() {
+    $("#searchInput").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $("#dev-table tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

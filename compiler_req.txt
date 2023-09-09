@@ -1,0 +1,10 @@
+sudo apt update
+sudo apt install python3
+
+
+sudo apt update
+sudo apt install default-jdk
+
+
+sudo apt update
+sudo apt install gcc

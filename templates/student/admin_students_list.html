@@ -1,0 +1,133 @@
+{% extends 'student/adminbase.html' %}
+
+{% block content %}
+<div class="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto mt-4">
+  <div class="flex flex-wrap justify-between mb-4" style="display: flex;">
+    <div class="mb-4 sm:w-1/3">
+      <label for="department" class="block mb-2" hidden>Department:</label>
+      <select id="department" onchange="filterTable()" class="w-full px-3 py-2 border border-gray-300 rounded" hidden>
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+          <option value="{{ dept }}">{{ dept }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-4 sm:w-1/3">
+      <label for="joined_year" class="block mb-2" hidden>Joined Year:</label>
+      <select id="joined_year" onchange="filterTable()" class="w-full px-3 py-2 border border-gray-300 rounded" hidden>
+        <option value="">All Joined Years</option>
+        {% for year in joined_years %}
+          <option value="{{ year }}">{{ year }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="sm:w-1/3">
+      <label for="search" class="block mb-2">Search:</label>
+      <input type="text" id="search" oninput="filterTable()" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded">
+    </div>
+  </div>
+
+  <div>
+    {% if departments %}
+      {% for dept in departments %}
+        <div class="bg-white rounded shadow mb-4">
+          <h2 class="text-lg font-semibold p-4">{{ dept }}</h2>
+          <div class="table-container overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr>
+                  <th class="px-4 py-2">Name</th>
+                  <th class="px-4 py-2">Joined Year</th>
+                  <th class="px-4 py-2">Roll No</th>
+                  <th class="px-4 py-2">Mobile</th>
+                  <th class="px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in students %}
+                  {% if student.department == dept %}
+                    <tr>
+                      <td class="px-4 py-2">{{ student.get_name }}</td>
+                      <td class="px-4 py-2 joined_year">{{ student.joinned_year|date:"Y" }}</td>
+                      <td class="px-4 py-2">{{ student.role_no }}</td>
+                      <td class="px-4 py-2">{{ student.mobile }}</td>
+                      <td class="px-4 py-2">
+                        <a class="btn btn-light btn-xs" href="students/{{ student.id }}">View</a>
+                        <a class="btn btn-success btn-xs" href="student/{{ student.id }}/edit">Edit</a>
+                        <a class="btn btn-danger btn-xs" href="students_delete/{{ student.id }}/delete">Delete</a>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="bg-white rounded shadow mb-4">
+        <div class="p-4">
+          <p>Department and students are not registered.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if not departments or not students %}
+    <div class="bg-white rounded shadow">
+      <div class="p-4">
+        <p>No students found.</p>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+
+</body>
+<script>
+  function filterTable() {
+    var departmentFilter = document.getElementById("department").value;
+    var joinedYearFilter = document.getElementById("joined_year").value;
+    var searchFilter = document.getElementById("search").value.toLowerCase();
+
+    var rows = document.getElementsByTagName("tr");
+
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      var departmentCell = row.getElementsByClassName("department")[0];
+      var joinedYearCell = row.getElementsByClassName("joined_year")[0];
+      var roleNoCell = row.getElementsByTagName("td")[2]; // Get the role number cell
+
+      var showRow = true;
+      if (departmentFilter && departmentCell.innerHTML !== departmentFilter) {
+        showRow = false;
+      }
+
+      if (joinedYearFilter && joinedYearCell.innerHTML !== joinedYearFilter) {
+        showRow = false;
+      }
+
+      if (searchFilter) {
+        var nameCell = row.getElementsByTagName("td")[0];
+        var roleNo = roleNoCell.innerHTML.trim();
+        var joinedYear = joinedYearCell.innerHTML.trim();
+        var name = nameCell.innerHTML.toLowerCase();
+
+        // Check if the search filter matches any part of the name, role number, or joined year
+        if (name.indexOf(searchFilter) === -1 && roleNo.indexOf(searchFilter) === -1 && joinedYear.indexOf(searchFilter) === -1) {
+          showRow = false;
+        }
+      }
+
+      if (showRow) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    }
+  }
+</script>
+</html>
+{% endblock %}
