@@ -766,6 +766,7 @@ def edit_attendes(request):
         response['Content-Disposition'] = 'attachment; filename="upload_assignments.xls"'
 
         return response
+    return redirect("view_attendes") 
     
 
 
