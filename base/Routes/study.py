@@ -31,6 +31,10 @@ from dateutil.relativedelta import relativedelta
 import openpyxl
 from django.http import HttpResponse
 from io import BytesIO
+from django.core import serializers
+import json
+from datetime import date
+
 
 def is_teacher(user):
     return user.groups.filter(name='TEACHER').exists()
@@ -682,7 +686,7 @@ def update_attendes(request):
         obj = Attendees(
                 class_id=splited[2], user_name=splited[1], subject_states=splited[0], roll_no=splited[3]
             )
-        # obj.save()
+        obj.save()
         print("Attendees Updated")
         
     return JsonResponse({"status": "success"})
@@ -1271,9 +1275,6 @@ def student_int_test_marks(request, roll_no):
 
 
 
-import json
-from datetime import date
-
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, date):
@@ -1439,7 +1440,6 @@ def view_attendees_by_roolno_percentage(request, roll_no):
 def assignments(request):
     return render(request, 'teacher/assignments.html',staff_detials(request,'Assignment'))
 
-from django.core import serializers
 
 def filter_attendees(request):
     
