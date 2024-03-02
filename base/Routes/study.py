@@ -202,24 +202,24 @@ def nave_home_classroom(request, pk, class_id):
                 print('accountapproval are working...')
                 if Room.objects.filter(name=class_id).exists():
                     print("now working...")
-                    return render(request, 'class_room/staff_class_room.html', staff_detials(request,'classRoom',{'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty}))
+                    return render(request, 'class_room/staff_class_room.html', staff_detials(request,'classRoom',{'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id}))
                 else:
                     new_room = Room.objects.create(name=class_id)
                     new_room.save()
-                    return render(request, 'class_room/staff_class_room.html', staff_detials(request,'Classroom created',{'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty}))
+                    return render(request, 'class_room/staff_class_room.html', staff_detials(request,'Classroom created',{'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id}))
             else:
                 return render(request, 'teacher/teacher_wait_for_approval.html')
         if get_role.role == 1:
-            return render(request, 'class_room/staff_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty})
+            return render(request, 'class_room/staff_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id})
         if get_role.role == 3:
-            return render(request, 'class_room/staff_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty})
+            return render(request, 'class_room/staff_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id})
         else:
             if Room.objects.filter(name=class_id).exists():
-                return render(request, 'class_room/student_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty})
+                return render(request, 'class_room/student_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id})
             else:
                 new_room = Room.objects.create(name=class_id)
                 new_room.save()
-                return render(request, 'class_room/student_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty})
+                return render(request, 'class_room/student_class_room.html', {'people': peoples, "detail": detials, 'books': books, 'recent_books': books[::-1][0:4],'table_datas':zip(table_datas,updated_by,collected,status_data),"empty":empty, "class_id":class_id})
 
 
 def home_classroom(request):
