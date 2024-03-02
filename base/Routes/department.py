@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from base.models import Department
+from base.models import Department, Student
 from .Forms.teacher_forms import DepartmentForm
 from .Tool.Tools import student_detials, staff_detials
 
@@ -25,10 +25,17 @@ def department_create(request):
 
 def department_edit(request, pk):
     department = get_object_or_404(Department, pk=pk)
+    old_department_name = department.name  # Get the department name before editing
     if request.method == 'POST':
         form = DepartmentForm(request.POST, instance=department)
         if form.is_valid():
             department = form.save()
+            new_department_name = form.cleaned_data['name']  # Accessing cleaned_data to retrieve the name field value
+            print("Department: ", old_department_name, "->", new_department_name)
+            std = Student.objects.filter(department=old_department_name)
+            for student in std:
+                student.department = new_department_name  # Assigning the new department name to each student's department
+                student.save()
             return redirect('department_detail', pk=department.pk)
     else:
         form = DepartmentForm(instance=department)

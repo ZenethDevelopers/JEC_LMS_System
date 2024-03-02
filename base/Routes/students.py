@@ -30,6 +30,7 @@ def admin_students_list(request):
 
     # Get unique departments, joined years, and semesters
     departments = set([student.department for student in students])
+    print(departments)
     department = Department.objects.all()
     joined_years = set([student.joinned_year for student in students])
 
