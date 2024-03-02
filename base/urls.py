@@ -28,10 +28,28 @@ from .Routes.compiler import *
 from .Routes.social_link import *
 from .Routes.email import *
 
-# Initilizes........................
+from django.views.static import serve
+
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
+from django.conf.urls import handler403, handler404, handler500, handler400
+
+handler404 = 'base.Routes.study.fournotfourerror'
+handler500 = 'base.Routes.study.fivehundrederror'
+handler403 = 'base.Routes.study.fournotthree'
+handler400 = 'base.Routes.study.fourhundred'
+handler403 = 'base.Routes.study.fournotthree'
+
+
+# Initialize........................
 
 urlpatterns = []
 
+serve_urls = [
+        re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
+        re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
+]
+urlpatterns.extend(serve_urls)
 
 def Make_Join(Componets):
     OutComponets = []
@@ -41,6 +59,15 @@ def Make_Join(Componets):
     return OutComponets
 
 # Urls............................
+error=[
+        path('fournotfourerror', fournotfourerror, name='fournotfourerror'),
+        path('fivehundrederror',fivehundrederror,name='fivehundrederror'),
+        path('studenterror',studenterror,name='studenterror'),
+        path('stafferror',stafferror,name='stafferror'),
+        path('adminerror',adminerror,name='adminerror'),
+        path('fournotthree',fournotthree,name='fournotthree'),
+        path('fourhundred',fourhundred,name='fourhundred'),
+]
 
 
 tools = [
@@ -557,15 +584,6 @@ department=[
     path('department/<int:pk>/delete/', department_delete, name='department_delete'),
 ]
 
-error=[
-        path('fournotfourerror', fournotfourerror, name='fournotfourerror'),
-        path('fivehundrederror',fivehundrederror,name='fivehundrederror'),
-        path('studenterror',studenterror,name='studenterror'),
-        path('stafferror',stafferror,name='stafferror'),
-        path('adminerror',adminerror,name='adminerror'),
-        path('fournotthree',fournotthree,name='fournotthree'),
-        path('fourhundred',fourhundred,name='fourhundred'),
-]
 
 parent = [
      path('parent_home', parent_home, name='parent_home'),
@@ -626,5 +644,9 @@ e_mail = [
 
 urlpatterns.extend(Make_Join([e_mail, compile, social, upload_assignments, assignments_, links_management, parent,department,tools, chatbot, NoCodeMaker, common_tool, note, gallery_, blog_url, common, event,
                    admin, chatroom, classroom, videochat, studet, teacher, exam, dynamicFunctionality, alternative_url, Staff_tool,error]))
+
+
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += staticfiles_urlpatterns()
+
