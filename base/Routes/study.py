@@ -530,67 +530,80 @@ def attendes_added(request):
 def no_usr_exit(request):
     return render(request,'msg/no_usr_exit.html')
 
+
+from django.core.mail import send_mail
 def update_attendes(request):
     my_date_time = timezone.now()
-    data: str = []
-    print("length is : ", request.POST.get('length'))
-    if request.POST.get('length') == '0':
-        print("runned")
-        return JsonResponse({"status":"no_usr","msg":"Empty Users"})
+    data = []
+    length = request.POST.get('length')
+    print("length is:", length)
+    
+    if length == '0':
+        print("No data received.")
+        return JsonResponse({"status": "no_usr", "msg": "Empty Users"})
         
-    for i in range(int(request.POST.get('length'))):
+    for i in range(int(length)):
         datas = request.POST.get('#cars'+str(i))
         data.append(datas)
+        try:
+            email_settings = EmailSettings.objects.first()
+            sender_email = email_settings.sender_email
+            password = email_settings.password
+            print(sender_email, password)
+        except:
+            print("cant fetch mail")
+        
     for i in data:
         splited = i.split('~~')
         print(i.split('~~'), i)
+        
         if Attendees.objects.filter(class_id=splited[2], roll_no=splited[3], Date=my_date_time).exists():
-            print("Data Already Exists....")
+            print("Data already exists.")
             return JsonResponse({"redirect": 1})
-            # return render(request,'attandees/message.html',{'message':'Data Already Exists..!','url':[" {% url 'teacher-dashboard' %}","{% url 'class_room' %}"],'btn':['Dashboard','ClassRoom Dashboard']})
-        else :
+        
+        else:
             if splited[0] == "Absent":
-                # date
                 today = date.today()
-                # Set start_date to the beginning of the current month
                 start_date = today.replace(day=1)
-                # Set end_date to today's date
                 end_date = today
                 c_attendees = Attendees.objects.filter(class_id=splited[2], Date__range=[start_date, end_date])
                 total_count = c_attendees.filter(class_id=splited[2]).values('Date').distinct().count()
+                
                 try:
                     c_attendee = Attendees.objects.get(roll_no=splited[3])
-                    current_month = (c_attendee.subject_states.count('Present') / total_count) * 100 # im
+                    current_month = (c_attendee.subject_states.count('Present') / total_count) * 100
                     no_of_days = c_attendee.subject_states.count('Present')
+                    
                 except:
-                    current_month=0
-                    no_of_days=0
+                    current_month = 0
+                    no_of_days = 0
                 
-                # Calculate the start_date of the previous month
                 start_date = today.replace(day=1) - relativedelta(months=1)
-                # Calculate the end_date of the previous month
                 end_date = start_date + relativedelta(day=31)
+                
                 try:
                     attendees = Attendees.objects.filter(class_id=splited[2], Date__range=[start_date, end_date])
                     total_count = attendees.filter(class_id=splited[2]).values('Date').distinct().count()
-                    attendee = Attendees.objects.get(roll_no=splited[3],class_id=splited[2])
+                    attendee = Attendees.objects.get(roll_no=splited[3], class_id=splited[2])
+                    
                 except:
-                    total_count=0
-                    attendee=0
-                    print("Attendees can't get..")
+                    total_count = 0
+                    attendee = 0
+                    print("Attendees cannot be retrieved.")
+                
                 try:
-                    prev_month = (attendee.subject_states.count('Present') / total_count) * 100 # im
+                    prev_month = (attendee.subject_states.count('Present') / total_count) * 100
                 except:
                     prev_month = 0
-                    print("pre Attendees can't get..")
+                    print("Previous month's attendance cannot be retrieved.")
                     
                 obje = Student.objects.get(role_no=splited[3])
+                
                 try:
                     email_settings = EmailSettings.objects.first()
-
                     sender_email = email_settings.sender_email
                     password = email_settings.password
-                    
+                    print(sender_email, password)
                     
                     message = MIMEMultipart("alternative")
                     context = ssl.create_default_context()
@@ -598,10 +611,7 @@ def update_attendes(request):
                     server.ehlo()
                     server.login(sender_email, password)
                     subject = f'Absence Notification ({today}) - {obje.get_name} from JEC'
-                    
-                    email_from = settings.EMAIL_HOST_USER
-                    recipient_list = ["glorysherin22@gmail.com"]
-                    
+
                     class_obj = ClassRooms.objects.get(subject_code=splited[2])
                     queryset = Internal_test_mark.objects.filter(
                         roll_no=splited[3]
@@ -616,93 +626,66 @@ def update_attendes(request):
                             Date__range=(start_date, end_date)
                         )
 
-                    # Generate HTML table with inline styles
                     html_table = '<table style="width: 100%; border-collapse: collapse;">'
                     html_table += '<thead><tr><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">ID</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Class ID</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Roll No</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Subject</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Mark</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Assessment No</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Date</th></tr></thead>'
                     html_table += '<tbody>'
+                    
                     for item in queryset:
                         html_table += f'<tr><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.id}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.class_id}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.roll_no}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.subject}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.mark}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.assesment_no}</td><td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">{item.Date}</td></tr>'
+                        
                     html_table += '</tbody>'
                     html_table += '</table>'
                     
-                    # send_mail( subject, message, email_from, recipient_list )
-                    from django.core.mail import EmailMultiAlternatives
-                    
                     html_content = f"""
-
-    <!-- email_template.html -->
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            /* Add your custom CSS styles here */
-        </style>
-    </head>
-    <body>
-        <p>Dear Parent,</p>
-        <p>
-            I hope this email finds you well. I am writing to inform you that your child, { obje.get_name }, was absent from college today.
-        </p>
-        <p>
-            <strong>Reason for Absence (if known):</strong> 
-        </p>
-        <p>
-            <strong>Absence Today:</strong> I would like to inform you that your child was absent from college today. The reason for their absence, if known, is illness, personal reasons, etc.
-            We understand that occasional absences may occur due to unforeseen circumstances, and we appreciate your prompt communication regarding your child's absence.
-            If there are any extenuating circumstances or if your child requires any academic support to catch up on missed work, please let us know, and we will be happy to assist.
-        </p>
-        <p>
-            <strong>Attendance Percentage:</strong> Your child, { obje.get_name }, has maintained a regular presence in the college. The attendance percentage for the current academic month is { current_month }%.
-        </p>
-        <p>
-            <strong>Number of Working Days:</strong> During the past month, our college had a total of { total_count } working days.
-            I am pleased to inform you that your child attended { no_of_days } days out of these, which demonstrates their dedication towards their studies.
-        </p>
-        <p>
-            <strong>Last Month Attendance Percentage:</strong> In the previous month, { obje.get_name } achieved an attendance percentage of { prev_month }%.
-        </p>
-        <p>
-            <strong>Test Marks:</strong> Regarding academic performance, I am delighted to share that { obje.get_name } 
-            Their test marks demonstrate a thorough understanding of the subjects and reflect their consistent efforts and hard work.
-        </p>
-        <h2>Internal Test Mark :</h2>
-        {html_table}
-        <p>
-            Should you have any concerns or queries regarding your child's progress or any other matter, please do not hesitate to reach out to us.
-            We are always here to provide guidance and support.
-        </p>
-        <p>
-            Thank you for your understanding and cooperation.
-        </p>
-        <p>
-            Warm regards,
-            <br>
-            { class_obj.owner.name }
-            <br>
-            { class_obj.department }
-            <br>
-            Jaya Engineering College
-        </p>
-    </body>
-    </html>
-    """
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            /* Add your custom CSS styles here */
+                        </style>
+                    </head>
+                    <body>
+                        <p>Dear Parent,</p>
+                        <p>I hope this email finds you well. I am writing to inform you that your child, { obje.get_name }, was absent from college today.</p>
+                        <p><strong>Absence Today:</strong> I would like to inform you that your child was absent from college today. The reason for their absence, if known, is illness, personal reasons, etc. We understand that occasional absences may occur due to unforeseen circumstances, and we appreciate your prompt communication regarding your child's absence. If there are any extenuating circumstances or if your child requires any academic support to catch up on missed work, please let us know, and we will be happy to assist.</p>
+                        <p><strong>Attendance Percentage:</strong> Your child, { obje.get_name }, has maintained a regular presence in the college. The attendance percentage for the current academic month is { current_month }%.</p>
+                        <p><strong>Number of Working Days:</strong> During the past month, our college had a total of { total_count } working days. I am pleased to inform you that your child attended { no_of_days } days out of these, which demonstrates their dedication towards their studies.</p>
+                        <p><strong>Last Month Attendance Percentage:</strong> In the previous month, { obje.get_name } achieved an attendance percentage of { prev_month }%.</p>
+                        <p><strong>Test Marks:</strong> Regarding academic performance, I am delighted to share that { obje.get_name } Their test marks demonstrate a thorough understanding of the subjects and reflect their consistent efforts and hard work.</p>
+                        <h2>Internal Test Mark :</h2>
+                        {html_table}
+                        <p>Should you have any concerns or queries regarding your child's progress or any other matter, please do not hesitate to reach out to us. We are always here to provide guidance and support.</p>
+                        <p>Thank you for your understanding and cooperation.</p>
+                        <p>Warm regards,<br>{ class_obj.owner.name }<br>{ class_obj.department }<br>Jaya Engineering College</p>
+                    </body>
+                    </html>
+                    """
                     
                     text_content = 'JEC Site'  
-                    email = EmailMultiAlternatives(subject, text_content, email_from, [obje.parent_mail_id])
-                    email.attach_alternative(html_content, "text/html")
-                    email.send()
-                except:
-                    print("Mail cant sent...")                    
+                    send_mail(
+                        subject,
+                        from_email=sender_email,
+                        message='',
+                        recipient_list=[obje.parent_mail_id, obje.mail_id],
+                        html_message=html_content,
+                        fail_silently=False,
+                    )
+                    # email.attach_alternative(html_content, "text/html")
+                    # email.send()
+                    
+                except Exception as e:
+                    print("Email could not be sent:", e)                    
         
-                
-        for i in Attendees.objects.all():
-            print(i.user_name, i.subject_states)
+        for attendee in Attendees.objects.all():
+            print(attendee.user_name, attendee.subject_states)
+            
         obj = Attendees(
                 class_id=splited[2], user_name=splited[1], subject_states=splited[0], roll_no=splited[3]
             )
-        obj.save()
+        # obj.save()
         print("Attendees Updated")
-    return JsonResponse({"status":"sucess"})
+        
+    return JsonResponse({"status": "success"})
 
 
 def update_edited_attendes(request):
