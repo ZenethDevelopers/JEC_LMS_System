@@ -2093,9 +2093,15 @@
           <div class="col-auto">
             <div class="avatar avatar-xl position-relative">
               {{ stur }}
+              {% if stusr.image.url %}
               <img
                 src=" {{ stusr.image.url }} "
                 alt="profile_image" class="w-100 border-radius-lg shadow-sm">
+              {% else %}
+              <img
+                src="https://thumbs.dreamstime.com/b/default-avatar-profile-flat-icon-social-media-user-vector-portrait-unknown-human-image-default-avatar-profile-flat-icon-184330869.jpg"
+                alt="profile_image" class="w-100 border-radius-lg shadow-sm">
+              {% endif %}
             </div>
           </div>
           <div class="col-auto my-auto">
