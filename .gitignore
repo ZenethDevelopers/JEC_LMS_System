@@ -2,7 +2,6 @@
 *.pyc
 /staticfiles
 *.sqlite3
-/media
 *.docx
 *.java
 *.c

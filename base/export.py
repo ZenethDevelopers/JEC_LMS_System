@@ -7,7 +7,7 @@ class AttendeesResource(resources.ModelResource):
     class_id = Field(attribute='class_id')
     user_name = Field(attribute='user_name')
     roll_no = Field(attribute='roll_no')
-    subject_states = Field(attribute='subject_states')
+    subject_states = Field(attribute='subject_states', column_name='Status')
     Date = Field(attribute='Date')
 
     class Meta:
